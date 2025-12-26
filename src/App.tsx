@@ -2,48 +2,73 @@ import { useEffect, useRef } from "react";
 import { Canvas, FabricText } from "fabric";
 import * as fabric from "fabric";
 
+type canvasRef = React.RefObject<Canvas | null>;
+
+const handleShortcuts = (e: globalThis.KeyboardEvent, canvasRef: canvasRef) => {
+  switch (e.key) {
+    case "Delete":
+      deleteSelected(canvasRef);
+      break;
+
+    case "c":
+    case "C":
+      addCircle(canvasRef);
+      break;
+
+    case "r":
+    case "R":
+      addRectangle(canvasRef);
+      break;
+
+    default:
+      break;
+  }
+};
+
+const addRectangle = (canvasRef: canvasRef) => {
+  console.log("Rectangle added to canvas");
+  const rect = new fabric.Rect({
+    left: Math.random() * 800,
+    top: Math.random() * 600,
+    fill: `hsl(${Math.random() * 360}, 70%, 60%)`,
+    width: 100,
+    height: 100,
+    selectable: true,
+  });
+  canvasRef.current?.add(rect);
+};
+
+const addCircle = (canvasRef: canvasRef) => {
+  console.log("Circle added to canvas");
+  const circle = new fabric.Circle({
+    left: Math.random() * 800,
+    top: Math.random() * 600,
+    fill: `hsl(${Math.random() * 360}, 70%, 60%)`,
+    radius: 50,
+    selectable: true,
+  });
+  canvasRef.current?.add(circle);
+};
+
+const deleteSelected = (canvasRef: canvasRef) => {
+  const active = canvasRef.current?.getActiveObject();
+  if (active) {
+    if (active.type === "activeselection") {
+      const activeSelection = active as fabric.ActiveSelection;
+      activeSelection.getObjects().forEach((obj) => {
+        canvasRef.current?.remove(obj);
+      });
+      canvasRef.current?.discardActiveObject();
+    } else {
+      canvasRef.current?.remove(active);
+    }
+    canvasRef.current?.requestRenderAll();
+  }
+};
+
 const App = () => {
   const canvasEl = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<Canvas | null>(null);
-
-  const addRectangle = () => {
-    const rect = new fabric.Rect({
-      left: Math.random() * 800,
-      top: Math.random() * 600,
-      fill: `hsl(${Math.random() * 360}, 70%, 60%)`,
-      width: 100,
-      height: 100,
-      selectable: true,
-    });
-    canvasRef.current?.add(rect);
-  };
-
-  const addCircle = () => {
-    const circle = new fabric.Circle({
-      left: Math.random() * 800,
-      top: Math.random() * 600,
-      fill: `hsl(${Math.random() * 360}, 70%, 60%)`,
-      radius: 50,
-      selectable: true,
-    });
-    canvasRef.current?.add(circle);
-  };
-
-  const deleteSelected = () => {
-    const active = canvasRef.current?.getActiveObject();
-    if (active) {
-      if (active.type === "activeselection") {
-        const activeSelection = active as fabric.ActiveSelection;
-        activeSelection.getObjects().forEach((obj) => {
-          canvasRef.current?.remove(obj);
-        });
-        canvasRef.current?.discardActiveObject();
-      } else {
-        canvasRef.current?.remove(active);
-      }
-      canvasRef.current?.requestRenderAll();
-    }
-  };
 
   useEffect(() => {
     if (!canvasEl.current) return;
@@ -138,18 +163,16 @@ const App = () => {
     };
 
     const heartInterval = setInterval(addFloatingHeart, 300);
+    const onKeyDown = (e: KeyboardEvent) => handleShortcuts(e, canvasRef);
+    window.addEventListener("keydown", onKeyDown);
+    console.log("Event listener added");
 
     return () => {
       clearInterval(heartInterval);
+      window.removeEventListener("keydown", onKeyDown);
       canvas.dispose();
     };
   }, []);
-
-  window.addEventListener("keydown", (e) => {
-    if (e.key == "Delete") {
-      deleteSelected();
-    }
-  });
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
@@ -168,19 +191,19 @@ const App = () => {
   w-min px-24 flex gap-2 p-4 bg-white/10 backdrop-blur rounded-lg"
       >
         <button
-          onClick={addRectangle}
+          onClick={() => addRectangle(canvasRef)}
           className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded transition-colors"
         >
           Add Rectangle
         </button>
         <button
-          onClick={addCircle}
+          onClick={() => addCircle(canvasRef)}
           className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded transition-colors"
         >
           Add Circle
         </button>
         <button
-          onClick={deleteSelected}
+          onClick={() => deleteSelected(canvasRef)}
           className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded transition-colors"
         >
           Delete Selected
