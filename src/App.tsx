@@ -5,6 +5,11 @@ import * as fabric from "fabric";
 type canvasRef = React.RefObject<Canvas | null>;
 
 const handleShortcuts = (e: globalThis.KeyboardEvent, canvasRef: canvasRef) => {
+  console.log(e);
+  if (e.ctrlKey && e.key.toLowerCase() == "a") {
+    console.log("Select all should be fired");
+    selectAll(canvasRef);
+  }
   switch (e.key) {
     case "Delete":
       deleteSelected(canvasRef);
@@ -23,6 +28,16 @@ const handleShortcuts = (e: globalThis.KeyboardEvent, canvasRef: canvasRef) => {
     default:
       break;
   }
+};
+
+const selectAll = (canvasRef: canvasRef) => {
+  let canvas = canvasRef.current;
+  if (!canvas) return;
+  let sel = new fabric.ActiveSelection(canvas.getObjects(), {
+    canvas: canvas,
+  });
+  canvas.setActiveObject(sel);
+  canvas.requestRenderAll();
 };
 
 const addRectangle = (canvasRef: canvasRef) => {
