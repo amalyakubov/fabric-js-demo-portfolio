@@ -164,9 +164,6 @@ const App = () => {
         selectable: false,
       });
 
-      hearts.push(heart);
-      canvas.add(heart);
-
       heart.animate(
         { top: -50 },
         {
@@ -175,7 +172,19 @@ const App = () => {
           onChange: () => canvas.requestRenderAll(),
         }
       );
+      hearts.push(heart);
+      canvas.add(heart);
     };
+
+    let imageInstance = new fabric.FabricImage("img1", {
+      left: 0,
+      opacity: 0.85,
+      filters: {
+        ""
+      }
+    });
+
+    canvas.add(imageInstance);
 
     const heartInterval = setInterval(addFloatingHeart, 300);
     const onKeyDown = (e: KeyboardEvent) => handleShortcuts(e, canvasRef);
@@ -199,6 +208,7 @@ const App = () => {
       />
       <img
         className="hidden"
+        id="img1"
         src="https://images.unsplash.com/photo-1494869042583-f6c911f04b4c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZXllfGVufDB8fDB8fHww"
       />
       <div
